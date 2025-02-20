@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
     # 3rd party apps
     'crispy_forms',
+    'rest_framework',
     'mapbox_location_field',
     'ckeditor',
     'ckeditor_uploader',

@@ -27,6 +27,31 @@ from .views import (
     create_event,
 )
 
+
+
+from django.urls import path, include
+from rest_framework import routers
+from .views_api import (
+    EventCategoryViewSet, JobCategoryViewSet, EventViewSet,
+    EventImageViewSet, EventAgendaViewSet, EventJobCategoryLinkingViewSet,
+    EventMemberViewSet, EventUserWishListViewSet, UserCoinViewSet,
+    UserViewSet
+)
+
+router = routers.DefaultRouter()
+router.register(r'users', UserViewSet)
+router.register(r'event-categories', EventCategoryViewSet)
+router.register(r'job-categories', JobCategoryViewSet)
+router.register(r'events', EventViewSet)
+router.register(r'event-images', EventImageViewSet)
+router.register(r'event-agendas', EventAgendaViewSet)
+router.register(r'event-job-categories', EventJobCategoryLinkingViewSet)
+router.register(r'event-members', EventMemberViewSet)
+router.register(r'event-wishlists', EventUserWishListViewSet)
+router.register(r'user-coins', UserCoinViewSet)
+
+
+
 urlpatterns = [
     path('category-list/', EventCategoryListView.as_view(), name='event-category-list'),
     path('create-category/', EventCategoryCreateView.as_view(), name='create-event-category'),
@@ -52,4 +77,7 @@ urlpatterns = [
     path('search_category/', search_event_category, name='search-event-category'),
     path('search_event/', search_event, name='search-event'),
     path('create/', create_event, name='create'),
+
+    path('api/', include(router.urls)),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 ]
