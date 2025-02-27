@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supprimer l'événement</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #fff;
+        }
+
+        /* Navbar */
+        .navbar {
+            background-color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+        }
+
+        .navbar a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.2rem;
+            margin: 0 15px;
+        }
+
+        .navbar a:hover {
+            color: #00A8FF;
+        }
+
+        /* Form Container */
+        .form-container {
+            width: 80%;
+            max-width: 800px;
+            margin: 40px auto;
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        h1,
+        h2 {
+            color: #00A8FF;
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: #fff;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+        }
+
+        /* Button Styles */
+        .button {
+            background-color: #00A8FF;
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .button:hover {
+            background-color: #007ACC;
+        }
+
+        .cancel-button {
+            background-color: #444;
+            color: #fff;
+            text-decoration: none;
+            padding: 12px 20px;
+            font-size: 1rem;
+            border-radius: 8px;
+            display: inline-block;
+            margin-top: 15px;
+        }
+
+        .cancel-button:hover {
+            background-color: #333;
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <div class="navbar">
+        <a href="/">Accueil</a>
+        <a href="/events">Événements</a>
+        <a href="/about">À propos</a>
+        <a href="/contact">Contact</a>
+    </div>
+
+    <!-- Form Container -->
+    <div class="form-container">
+        <h2>Supprimer l'événement</h2>
+        <p>Êtes-vous sûr de vouloir supprimer l'événement <strong>"{{ object.title }}"</strong> ?</p>
+
+        <form method="POST">
+            {% csrf_token %}
+            <button type="submit" class="button">Confirmer la suppression</button>
+        </form>
+
+        <a href="{% url 'home' %}" class="cancel-button">Annuler</a>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p style="color: #fff; text-align: center;">© 2024 Événements Inc. | <a href="/privacy" style="color: #00A8FF;">Politique de confidentialité</a> | <a href="/terms" style="color: #00A8FF;">Conditions d'utilisation</a></p>
+    </footer>
+
+</body>
+
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #f8f9fa; padding: 20px; text-align: center; }
+        .content { padding: 20px; }
+        .footer { margin-top: 20px; padding: 10px; text-align: center; font-size: 0.9em; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Confirmation d'inscription</h2>
+        </div>
+        <div class="content">
+            <p>Bonjour {{ user.first_name }},</p>
+            <p>Nous vous confirmons votre inscription à l'événement suivant :</p>
+            <h3>{{ event.title }}</h3>
+            <p><strong>Date :</strong> {{ event.start_date|date:"d/m/Y H:i" }}</p>
+            <p><strong>Lieu :</strong> {{ event.location }}</p>
+            {% if ticket.ticket_type == 'paid' %}
+                <p>Votre billet est de type payant. Veuillez effectuer le paiement pour finaliser votre inscription.</p>
+            {% else %}
+                <p>Votre billet est gratuit. Votre inscription est confirmée.</p>
+            {% endif %}
+            <p>Vous pouvez consulter les détails de votre événement à tout moment en cliquant sur ce lien :</p>
+            <p><a href="{{ request.build_absolute_uri }}{% url 'event_detail' event.id %}">Voir l'événement</a></p>
+        </div>
+        <div class="footer">
+            <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ event.title }} - Détails de l'événement</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        .event-detail {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .event-detail h1 {
+            font-size: 2.5em;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .event-detail img {
+            width: 100%;
+            max-width: 800px;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .event-detail p {
+            font-size: 1.1em;
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .event-detail p strong {
+            color: #333;
+        }
+
+        .event-detail .event-info {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .event-detail .event-info div {
+            width: 48%;
+            margin-bottom: 10px;
+        }
+
+        .event-detail .event-info div p {
+            margin: 0;
+        }
+
+        .event-detail .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            font-size: 1.1em;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .event-detail .button:hover {
+            background-color: #0056b3;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="event-detail">
+        <h1>{{ event.title }}</h1>
+
+        {% if event.image %}
+            <img src="{{ event.image.url }}" alt="{{ event.title }}">
+        {% endif %}
+
+        <div class="event-info">
+            <div>
+                <p><strong>Description:</strong> {{ event.description }}</p>
+                <p><strong>Location:</strong> {{ event.location }}</p>
+            </div>
+
+            <div>
+                <p><strong>Start Date:</strong> {{ event.start_date|date:"d M Y, H:i" }}</p>
+                <p><strong>End Date:</strong> {{ event.end_date|date:"d M Y, H:i" }}</p>
+                <p><strong>Capacity:</strong> {{ event.capacity }}</p>
+                {% if event.price %}
+                    <p><strong>Price:</strong> €{{ event.price }}</p>
+                {% endif %}
+                <p><strong>Category:</strong> {{ event.category.name }}</p>
+            </div>
+        </div>
+
+        <a href="{% url 'list_event' %}" class="button">Retour à la liste des événements</a>
+    </div>
+</body>
+</html>

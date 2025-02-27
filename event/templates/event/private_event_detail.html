@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ event.title }}</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        /* Container */
+        .container {
+            width: 80%;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Event Detail */
+        .event-detail {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .event-detail h1 {
+            font-size: 2rem;
+            color: #00A8FF;
+            margin-bottom: 10px;
+        }
+
+        .event-detail p {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+
+        .event-detail strong {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .event-detail img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Price */
+        .price {
+            font-size: 1.2rem;
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .price.free {
+            color: #e74c3c;
+        }
+
+        /* Category & Organizer */
+        .category,
+        .organizer {
+            background-color: #f1f1f1;
+            border-radius: 6px;
+            padding: 10px;
+            display: inline-block;
+            margin-top: 15px;
+        }
+
+        .category {
+            background-color: #00A8FF;
+            color: #fff;
+        }
+
+        .organizer {
+            background-color: #f39c12;
+            color: #fff;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        footer a {
+            color: #00A8FF;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- Event Detail Section -->
+        <div class="event-detail">
+            <h1>{{ event.title }}</h1>
+            <p>{{ event.description }}</p>
+
+            {% if event.image %}
+                <img src="{{ event.image.url }}" alt="{{ event.title }}">
+            {% endif %}
+
+            <p><strong>Lieu :</strong> {{ event.location }}</p>
+            <p><strong>Date :</strong> {{ event.start_date|date:"d M Y" }} au {{ event.end_date|date:"d M Y" }}</p>
+            <p class="price">
+                <strong>Prix :</strong> {% if event.price %} {{ event.price }} € {% else %} Gratuit {% endif %}
+            </p>
+            <p><strong>Catégorie :</strong> <span class="category">{{ event.category.name }}</span></p>
+            <p><strong>Organisateur :</strong> <span class="organizer">{{ event.organizer.first_name }}</span></p>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>Événement organisé par <strong>{{ event.organizer.username }}</strong></p>
+            <p>&copy; 2024 Événements - Tous droits réservés | <a href="/">Retour à l'accueil</a></p>
+        </footer>
+    </div>
+
+</body>
+
+</html>

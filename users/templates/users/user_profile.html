@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Utilisateur</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000000; /* Fond noir */
+            color: #fff; /* Texte blanc pour le contraste */
+            margin: 0;
+            padding: 0;
+        }
+
+        .profile-container {
+            max-width: 900px;
+            margin: 50px auto;
+            background-color: #333; /* Fond sombre pour la section du profil */
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            padding: 30px;
+            overflow: hidden;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #555; /* Bordure plus claire */
+            padding-bottom: 20px;
+        }
+
+        .profile-photo {
+            flex-shrink: 0;
+            margin-right: 20px;
+            text-align: center;
+        }
+
+        .profile-photo img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #4CAF50;
+        }
+
+        .profile-info {
+            flex-grow: 1;
+        }
+
+        .profile-info h1 {
+            font-size: 28px;
+            color: #fff; /* Texte blanc pour le nom */
+            margin-bottom: 10px;
+        }
+
+        .profile-info p {
+            font-size: 18px;
+            color: #bbb; /* Texte gris clair */
+            margin-bottom: 8px;
+        }
+
+        .profile-info p strong {
+            color: #fff; /* Texte en gras blanc */
+        }
+
+        .profile-actions {
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        .profile-actions .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            margin: 5px;
+            border-radius: 5px;
+            font-size: 16px;
+            text-decoration: none;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .profile-actions .btn-edit {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .profile-actions .btn-edit:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        .profile-actions .btn-logout {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .profile-actions .btn-logout:hover {
+            background-color: #e53935;
+            transform: scale(1.05);
+        }
+
+        @media (max-width: 768px) {
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .profile-photo {
+                margin: 0;
+                margin-bottom: 20px;
+            }
+
+            .profile-info {
+                text-align: center;
+            }
+
+            .profile-actions {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-photo">
+            {% if user.profile_photo %}
+                <img src="{{ user.profile_photo.url }}" alt="Photo de profil">
+            {% else %}
+                <img src="https://via.placeholder.com/150" alt="Photo de profil">
+            {% endif %}
+        </div>
+        <div class="profile-info">
+            <h1>{{ user.first_name }} {{ user.last_name }}</h1>
+            <p><strong>Email :</strong> {{ user.email }}</p>
+            <p><strong>Prenom :</strong> {{ user.first_name }}</p>
+            <p><strong>Nom :</strong> {{ user.last_name }}</p>
+            <p><strong>Rôle :</strong> {{ user.get_role_display }}</p>
+        </div>
+    </div>
+
+    <div class="profile-actions">
+        <a href="{% url 'profile_update' %}" class="btn btn-edit">Éditer le profil</a>
+        <a href="{% url 'logout' %}" class="btn btn-logout">Se déconnecter</a>
+    </div>
+</div>
+
+</body>
+</html>
