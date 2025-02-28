@@ -450,64 +450,55 @@
                         {% endif %}
                         <div class="card-body">
                             <h5 class="card-title">{{ event.title }}</h5>
-                            <p class="card-text">{{ event.description|truncatewords:20 }}</p>
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <span class="badge bg-primary">{{ event.category.name }}</span>
-                                <small class="text-muted">{{ event.start_date|date:"d/m/Y" }}</small>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                <span class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ event.location }}</span>
-                                <span class="text-muted">
-                                    <i class="fas fa-users"></i> 
-                                    {{ event.get_registered_count }}/{{ event.capacity }} places
-                                </span>
-                            </div>
-                            {% if event.price %}
-                                <div class="text-end mb-3">
-                                    <span class="badge bg-success">{{ event.price }} €</span>
-                                </div>
-                            {% else %}
-                                <div class="text-end mb-3">
-                                    <span class="badge bg-info">Gratuit</span>
-                                </div>
+                            {% if not event.is_public %}
+                            <span class="badge bg-info">
+                                <i class="fas fa-lock"></i> Privé
+                            </span>
                             {% endif %}
-                        </div>
-                        <div class="card-footer bg-white border-top-0">
+                            <p class="card-text">{{ event.description|truncatewords:30 }}</p>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    <i class="fas fa-map-marker-alt"></i> {{ event.location }}<br>
+                                    <i class="fas fa-calendar"></i> {{ event.start_date|date:"d/m/Y H:i" }}
+                                </small>
+                            </p>
                             <div class="d-flex justify-content-between align-items-center">
-                                <div class="btn-group">
-                                    <a href="{% url 'event_detail' event.id %}" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-info-circle"></i> Plus d'infos
+                                {% if event.price %}
+                                <span class="badge bg-success">{{ event.price }}€</span>
+                                {% else %}
+                                <span class="badge bg-info">Gratuit</span>
+                                {% endif %}
+                                
+                                {% if event.is_expired %}
+                                <span class="badge bg-danger">Terminé</span>
+                                {% elif not event.has_available_spots %}
+                                <span class="badge bg-warning">Complet</span>
+                                {% else %}
+                                <span class="badge bg-primary">{{ event.capacity|add:"-"|add:event.get_registered_count }} places</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{% url 'event_detail' private_key=event.private_key %}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-info-circle"></i> Détails
+                                </a>
+                                {% if user.is_authenticated %}
+                                    {% if event.organizer == user %}
+                                    <div class="btn-group">
+                                        <a href="{% url 'update_event' private_key=event.private_key %}" class="btn btn-warning btn-sm">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'delete_event' private_key=event.private_key %}" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                    {% elif not event.is_expired and event.has_available_spots and not event.is_user_registered %}
+                                    <a href="{% url 'register_for_event' private_key=event.private_key %}" class="btn btn-success btn-sm">
+                                        <i class="fas fa-ticket-alt"></i> S'inscrire
                                     </a>
-                                    {% if request.user.is_authenticated %}
-                                        {% if request.user == event.organizer %}
-                                            <a href="{% url 'update_event' event.id %}" class="btn btn-sm btn-warning">
-                                                <i class="fas fa-edit"></i> Modifier
-                                            </a>
-                                            <a href="{% url 'delete_event' event.id %}" class="btn btn-sm btn-danger" 
-                                               onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?');">
-                                                <i class="fas fa-trash"></i> Supprimer
-                                            </a>
-                                        {% else %}
-                                            {% if event.is_expired %}
-                                                <button class="btn btn-sm btn-secondary" disabled>
-                                                    <i class="fas fa-clock"></i> Événement terminé
-                                                </button>
-                                            {% elif not event.has_available_spots %}
-                                                <button class="btn btn-sm btn-secondary" disabled>
-                                                    <i class="fas fa-users-slash"></i> Complet
-                                                </button>
-                                            {% elif event.id in user_tickets %}
-                                                <button class="btn btn-sm btn-info" disabled>
-                                                    <i class="fas fa-check"></i> Déjà inscrit
-                                                </button>
-                                            {% else %}
-                                                <a href="{% url 'register_for_event' event.id %}" class="btn btn-sm btn-success">
-                                                    <i class="fas fa-ticket-alt"></i> S'inscrire
-                                                </a>
-                                            {% endif %}
-                                        {% endif %}
                                     {% endif %}
-                                </div>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
