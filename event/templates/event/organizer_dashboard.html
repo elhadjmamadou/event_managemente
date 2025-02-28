@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord de l'organisateur</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        .dashboard {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .dashboard .info {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .dashboard .info div {
+            flex: 1;
+            margin: 10px;
+            padding: 20px;
+            background-color: #e7f3fe;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .dashboard .event-list {
+            margin-top: 30px;
+        }
+
+        .dashboard .event {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .dashboard .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .dashboard .button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <h1>Tableau de bord de l'organisateur</h1>
+        <div class="info">
+            <div>
+                <p><strong>Total des événements :</strong> {{ total_events }}</p>
+            </div>
+            <div>
+                <p><strong>Total des inscriptions :</strong> {{ total_registrations }}</p>
+            </div>
+            <div>
+                <p><strong>Total des revenus :</strong> €{{ total_revenue }}</p>
+            </div>
+        </div>
+
+        <div class="event-list">
+            <h2>Liste des événements</h2>
+            {% for event in events %}
+                <div class="event">
+                    <h3>{{ event.title }}</h3>
+                    <p><strong>Date de début :</strong> {{ event.start_date|date:"d M Y, H:i" }}</p>
+                    <p><strong>Capacité :</strong> {{ event.capacity }}</p>
+                    <p><strong>Revenu total :</strong> €{{ event.total_revenue }}</p>
+                </div>
+            {% empty %}
+                <p>Aucun événement trouvé.</p>
+            {% endfor %}
+        </div>
+        <a href="#" class="button">Ajouter un événement</a>
+    </div>
+</body>
+</html>

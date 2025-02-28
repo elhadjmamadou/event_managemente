@@ -1,143 +1,93 @@
-<!DOCTYPE html>
-<html lang="fr">
+{% extends 'base.html' %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ event.title }}</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
-
-        /* Container */
-        .container {
-            width: 80%;
-            max-width: 1200px;
-            margin: 50px auto;
-            padding: 30px;
-            background-color: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Event Detail */
-        .event-detail {
-            background-color: #f9f9f9;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 30px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .event-detail h1 {
-            font-size: 2rem;
-            color: #00A8FF;
-            margin-bottom: 10px;
-        }
-
-        .event-detail p {
-            font-size: 1rem;
-            line-height: 1.6;
-            margin: 10px 0;
-        }
-
-        .event-detail strong {
-            font-weight: bold;
-            color: #333;
-        }
-
-        .event-detail img {
-            display: block;
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            margin-top: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Price */
-        .price {
-            font-size: 1.2rem;
-            color: #27ae60;
-            font-weight: bold;
-        }
-
-        .price.free {
-            color: #e74c3c;
-        }
-
-        /* Category & Organizer */
-        .category,
-        .organizer {
-            background-color: #f1f1f1;
-            border-radius: 6px;
-            padding: 10px;
-            display: inline-block;
-            margin-top: 15px;
-        }
-
-        .category {
-            background-color: #00A8FF;
-            color: #fff;
-        }
-
-        .organizer {
-            background-color: #f39c12;
-            color: #fff;
-        }
-
-        /* Footer */
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            font-size: 0.9rem;
-            color: #aaa;
-        }
-
-        footer a {
-            color: #00A8FF;
-            text-decoration: none;
-        }
-
-        footer a:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
-
-<body>
-
-    <div class="container">
-        <!-- Event Detail Section -->
-        <div class="event-detail">
-            <h1>{{ event.title }}</h1>
-            <p>{{ event.description }}</p>
-
-            {% if event.image %}
-                <img src="{{ event.image.url }}" alt="{{ event.title }}">
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">{{ event.title }}</h2>
+            {% if is_organizer %}
+            <span class="badge bg-warning">Vous êtes l'organisateur</span>
             {% endif %}
-
-            <p><strong>Lieu :</strong> {{ event.location }}</p>
-            <p><strong>Date :</strong> {{ event.start_date|date:"d M Y" }} au {{ event.end_date|date:"d M Y" }}</p>
-            <p class="price">
-                <strong>Prix :</strong> {% if event.price %} {{ event.price }} € {% else %} Gratuit {% endif %}
-            </p>
-            <p><strong>Catégorie :</strong> <span class="category">{{ event.category.name }}</span></p>
-            <p><strong>Organisateur :</strong> <span class="organizer">{{ event.organizer.first_name }}</span></p>
         </div>
-
-        <!-- Footer -->
-        <footer>
-            <p>Événement organisé par <strong>{{ event.organizer.username }}</strong></p>
-            <p>&copy; 2024 Événements - Tous droits réservés | <a href="/">Retour à l'accueil</a></p>
-        </footer>
+        
+        <div class="card-body">
+            {% if event.image %}
+            <img src="{{ event.image.url }}" class="img-fluid rounded mb-3" alt="{{ event.title }}">
+            {% endif %}
+            
+            <div class="alert alert-info">
+                <i class="fas fa-lock"></i> Ceci est un événement privé
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h4>Détails de l'événement</h4>
+                    <p><strong><i class="fas fa-calendar"></i> Date de début :</strong> {{ event.start_date|date:"d/m/Y H:i" }}</p>
+                    <p><strong><i class="fas fa-calendar-check"></i> Date de fin :</strong> {{ event.end_date|date:"d/m/Y H:i" }}</p>
+                    <p><strong><i class="fas fa-map-marker-alt"></i> Lieu :</strong> {{ event.location }}</p>
+                    <p><strong><i class="fas fa-users"></i> Places disponibles :</strong> {{ event.capacity|add:"-"|add:event.get_registered_count }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h4>Prix et inscription</h4>
+                    {% if event.price %}
+                    <p class="badge bg-success">{{ event.price }}€</p>
+                    {% else %}
+                    <p class="badge bg-info">Gratuit</p>
+                    {% endif %}
+                    
+                    {% if is_organizer %}
+                    <div class="alert alert-warning">
+                        <p>En tant qu'organisateur, vous ne pouvez pas vous inscrire à votre propre événement.</p>
+                        <p>Lien privé à partager :</p>
+                        <input type="text" class="form-control" value="{{ request.build_absolute_uri }}" readonly>
+                    </div>
+                    {% elif is_registered %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i> Vous êtes inscrit à cet événement
+                    </div>
+                    {% elif event.has_available_spots and not event.is_expired %}
+                    <a href="{% url 'register_for_event' event.id %}" class="btn btn-primary">
+                        <i class="fas fa-ticket-alt"></i> S'inscrire
+                    </a>
+                    {% elif event.is_expired %}
+                    <div class="alert alert-danger">
+                        <i class="fas fa-clock"></i> L'événement est terminé
+                    </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> Plus de places disponibles
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="description mb-4">
+                <h4>Description</h4>
+                <p>{{ event.description }}</p>
+            </div>
+            
+            {% if participants %}
+            <div class="participants-section">
+                <h4>Participants inscrits</h4>
+                <div class="row">
+                    {% for ticket in participants %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ ticket.user.first_name }} {{ ticket.user.last_name }}</h5>
+                                {% if ticket.ticket_type == 'paid' %}
+                                <span class="badge bg-success">Payant</span>
+                                {% else %}
+                                <span class="badge bg-info">Gratuit</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
     </div>
-
-</body>
-
-</html>
+</div>
+{% endblock %}

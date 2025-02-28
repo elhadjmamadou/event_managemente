@@ -1,14 +1,13 @@
 from django.urls import path
-from .views import (EventCreateView, EventUpdateView, EventDeleteView, private_event_view,
-                    EventDetailView, EventListView, register_for_event, OrganizerDashboardView)
+from . import views
 
 urlpatterns = [
-    path('create/', EventCreateView.as_view(), name='create_event'),
-    path('list/', EventListView.as_view(), name='list_event'),
-    path('<int:pk>/detail/', EventDetailView.as_view(), name='event_detail'),
-    path('<int:pk>/update/', EventUpdateView.as_view(), name='update_event'),
-    path('<int:pk>/delete/', EventDeleteView.as_view(), name='delete_event'),
-    path('<int:event_id>/register/', register_for_event, name='register_event'),
-    path('private/<uuid:private_key>/', private_event_view, name='private_event'),
-    path('dashboard/', OrganizerDashboardView.as_view(), name='organizer_dashboard'),
+    path('', views.home, name='home'),
+    path('events/', views.EventListView.as_view(), name='list_event'),
+    path('events/create/', views.EventCreateView.as_view(), name='create_event'),
+    path('events/<int:pk>/', views.EventDetailView.as_view(), name='event_detail'),
+    path('events/<int:pk>/update/', views.EventUpdateView.as_view(), name='update_event'),
+    path('events/<int:pk>/delete/', views.EventDeleteView.as_view(), name='delete_event'),
+    path('events/<int:event_id>/register/', views.register_for_event, name='register_for_event'),
+    path('dashboard/', views.OrganizerDashboardView.as_view(), name='organizer_dashboard'),
 ]
