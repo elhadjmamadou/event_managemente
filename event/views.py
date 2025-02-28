@@ -276,28 +276,66 @@ def register_for_event(request, private_key):
     
     return redirect('event_detail', private_key=private_key)
 
-class OrganizerDashboardView(LoginRequiredMixin, TemplateView):
+class OrganizerDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'event/organizer_dashboard.html'
     
+    def test_func(self):
+        return self.request.user.is_organisateur
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         
-        # Récupérer les événements de l'organisateur
+        # Récupérer les paramètres de filtrage et de tri
+        status = self.request.GET.get('status', '')
+        sort = self.request.GET.get('sort', 'date')
+        
+        # Base queryset avec les annotations nécessaires
         events = Event.objects.filter(organizer=user).annotate(
             total_tickets=Count('ticket'),
             total_revenue=Sum('ticket__event__price', filter=Q(ticket__is_paid=True))
         )
         
-        # Statistiques globales
+        # Appliquer les filtres de statut
+        now = timezone.now()
+        if status == 'upcoming':
+            events = events.filter(start_date__gt=now)
+        elif status == 'ongoing':
+            events = events.filter(start_date__lte=now, end_date__gte=now)
+        elif status == 'past':
+            events = events.filter(end_date__lt=now)
+        
+        # Appliquer le tri
+        if sort == 'date':
+            events = events.order_by('start_date')
+        elif sort == 'participants':
+            events = events.order_by('-total_tickets')
+        elif sort == 'revenue':
+            events = events.order_by('-total_revenue')
+        
+        # Pagination
+        paginator = Paginator(events, 10)
+        page = self.request.GET.get('page')
+        events_page = paginator.get_page(page)
+        
+        # Calculer les statistiques globales
         total_events = events.count()
         total_registrations = events.aggregate(total=Sum('total_tickets'))['total'] or 0
         total_revenue = events.aggregate(total=Sum('total_revenue'))['total'] or 0
         
+        # Calculer le taux d'occupation moyen
+        total_capacity = events.aggregate(total=Sum('capacity'))['total'] or 1  # Éviter division par zéro
+        occupancy_rate = round((total_registrations / total_capacity) * 100, 1)
+        
         context.update({
-            'events': events,
+            'events': events_page,
             'total_events': total_events,
             'total_registrations': total_registrations,
             'total_revenue': total_revenue,
+            'occupancy_rate': occupancy_rate,
+            'status': status,
+            'sort': sort,
+            'now': now,
         })
+        
         return context

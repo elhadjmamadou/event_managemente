@@ -1,103 +1,229 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tableau de bord de l'organisateur</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f9;
-        }
+{% extends 'base.html' %}
 
-        .dashboard {
-            max-width: 900px;
-            margin: 20px auto;
-            padding: 30px;
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-        }
-
-        .dashboard h1 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 20px;
-        }
-
-        .dashboard .info {
-            margin-top: 20px;
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-        }
-
-        .dashboard .info div {
-            flex: 1;
-            margin: 10px;
-            padding: 20px;
-            background-color: #e7f3fe;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .dashboard .event-list {
-            margin-top: 30px;
-        }
-
-        .dashboard .event {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .dashboard .button {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #3498db;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        .dashboard .button:hover {
-            background-color: #2980b9;
-        }
-    </style>
-</head>
-<body>
-    <div class="dashboard">
-        <h1>Tableau de bord de l'organisateur</h1>
-        <div class="info">
-            <div>
-                <p><strong>Total des événements :</strong> {{ total_events }}</p>
-            </div>
-            <div>
-                <p><strong>Total des inscriptions :</strong> {{ total_registrations }}</p>
-            </div>
-            <div>
-                <p><strong>Total des revenus :</strong> €{{ total_revenue }}</p>
-            </div>
+{% block content %}
+<div class="container mt-4">
+    <!-- En-tête du tableau de bord -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1><i class="fas fa-tachometer-alt"></i> Tableau de bord organisateur</h1>
         </div>
-
-        <div class="event-list">
-            <h2>Liste des événements</h2>
-            {% for event in events %}
-                <div class="event">
-                    <h3>{{ event.title }}</h3>
-                    <p><strong>Date de début :</strong> {{ event.start_date|date:"d M Y, H:i" }}</p>
-                    <p><strong>Capacité :</strong> {{ event.capacity }}</p>
-                    <p><strong>Revenu total :</strong> €{{ event.total_revenue }}</p>
-                </div>
-            {% empty %}
-                <p>Aucun événement trouvé.</p>
-            {% endfor %}
+        <div class="col-md-4 text-end">
+            <a href="{% url 'create_event' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Créer un événement
+            </a>
         </div>
-        <a href="#" class="button">Ajouter un événement</a>
     </div>
-</body>
-</html>
+
+    <!-- Cartes de statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Événements</h5>
+                    <h2 class="mb-0">{{ total_events }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Inscriptions</h5>
+                    <h2 class="mb-0">{{ total_registrations }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Revenus Totaux</h5>
+                    <h2 class="mb-0">{{ total_revenue|default:0 }}€</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Taux de Remplissage</h5>
+                    <h2 class="mb-0">{{ occupancy_rate|default:0 }}%</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Statut</label>
+                    <select name="status" class="form-select">
+                        <option value="">Tous les statuts</option>
+                        <option value="upcoming" {% if status == 'upcoming' %}selected{% endif %}>À venir</option>
+                        <option value="ongoing" {% if status == 'ongoing' %}selected{% endif %}>En cours</option>
+                        <option value="past" {% if status == 'past' %}selected{% endif %}>Passés</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Tri par</label>
+                    <select name="sort" class="form-select">
+                        <option value="date" {% if sort == 'date' %}selected{% endif %}>Date</option>
+                        <option value="participants" {% if sort == 'participants' %}selected{% endif %}>Participants</option>
+                        <option value="revenue" {% if sort == 'revenue' %}selected{% endif %}>Revenus</option>
+                    </select>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Liste des événements -->
+    <div class="card">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Mes Événements</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Événement</th>
+                        <th>Date</th>
+                        <th>Statut</th>
+                        <th>Inscrits</th>
+                        <th>Revenus</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                {% if event.image %}
+                                <img src="{{ event.image.url }}" alt="{{ event.title }}" class="me-2" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;">
+                                {% endif %}
+                                <div>
+                                    <strong>{{ event.title }}</strong>
+                                    {% if not event.is_public %}
+                                    <span class="badge bg-info ms-1">Privé</span>
+                                    {% endif %}
+                                    <br>
+                                    <small class="text-muted">{{ event.location }}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {{ event.start_date|date:"d/m/Y H:i" }}
+                        </td>
+                        <td>
+                            {% if event.is_expired %}
+                            <span class="badge bg-secondary">Terminé</span>
+                            {% elif event.start_date|date:'Y-m-d' == now|date:'Y-m-d' %}
+                            <span class="badge bg-success">En cours</span>
+                            {% else %}
+                            <span class="badge bg-primary">À venir</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                {{ event.total_tickets }}/{{ event.capacity }}
+                                <div class="progress ms-2" style="width: 60px; height: 6px;">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: {% widthratio event.total_tickets event.capacity 100 %}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if event.total_revenue %}
+                            {{ event.total_revenue }}€
+                            {% else %}
+                            Gratuit
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{% url 'event_detail' private_key=event.private_key %}" 
+                                   class="btn btn-sm btn-outline-primary" 
+                                   title="Voir les détails">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'update_event' private_key=event.private_key %}" 
+                                   class="btn btn-sm btn-outline-warning" 
+                                   title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-info" 
+                                        title="Copier le lien"
+                                        onclick="copyEventLink('{{ request.build_absolute_uri }}{% url 'event_detail' private_key=event.private_key %}')">
+                                    <i class="fas fa-link"></i>
+                                </button>
+                                <a href="{% url 'delete_event' private_key=event.private_key %}" 
+                                   class="btn btn-sm btn-outline-danger" 
+                                   title="Supprimer"
+                                   onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4">
+                            <p class="mb-0">Vous n'avez pas encore créé d'événement.</p>
+                            <a href="{% url 'create_event' %}" class="btn btn-primary mt-2">
+                                Créer mon premier événement
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if events.has_other_pages %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if events.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ events.previous_page_number }}{% if status %}&status={{ status }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}">
+                    Précédent
+                </a>
+            </li>
+            {% endif %}
+
+            {% for num in events.paginator.page_range %}
+            <li class="page-item {% if events.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}{% if status %}&status={{ status }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}">
+                    {{ num }}
+                </a>
+            </li>
+            {% endfor %}
+
+            {% if events.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ events.next_page_number }}{% if status %}&status={{ status }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}">
+                    Suivant
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+{% block extra_js %}
+<script>
+function copyEventLink(link) {
+    navigator.clipboard.writeText(link).then(function() {
+        alert('Lien copié dans le presse-papiers !');
+    }, function(err) {
+        alert('Erreur lors de la copie du lien');
+    });
+}
+</script>
+{% endblock %}
+{% endblock %}

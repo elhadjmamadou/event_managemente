@@ -56,7 +56,7 @@
                         <i class="fas fa-check-circle"></i> Vous êtes inscrit à cet événement
                     </div>
                     {% elif event.has_available_spots and not event.is_expired %}
-                    <a href="{% url 'register_for_event' event.id %}" class="btn btn-primary">
+                    <a href="{% url 'register_for_event' event.private_key %}" class="btn btn-primary">
                         <i class="fas fa-ticket-alt"></i> S'inscrire
                     </a>
                     {% elif event.is_expired %}
@@ -68,6 +68,25 @@
                         <i class="fas fa-exclamation-triangle"></i> Plus de places disponibles
                     </div>
                     {% endif %}
+
+                    <!-- Boutons de partage -->
+                    <div class="mt-4">
+                        <h4>Partager l'événement</h4>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" onclick="shareOnFacebook()">
+                                <i class="fab fa-facebook-f"></i> Facebook
+                            </button>
+                            <button class="btn btn-info text-white" onclick="shareOnTwitter()">
+                                <i class="fab fa-twitter"></i> Twitter
+                            </button>
+                            <button class="btn btn-success" onclick="shareOnWhatsApp()">
+                                <i class="fab fa-whatsapp"></i> WhatsApp
+                            </button>
+                            <button class="btn btn-secondary" onclick="shareByEmail()">
+                                <i class="fas fa-envelope"></i> Email
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -107,9 +126,31 @@ function copyToClipboard() {
     copyText.select();
     copyText.setSelectionRange(0, 99999);
     document.execCommand("copy");
-    
-    // Optionnel : Afficher un message de confirmation
     alert("Lien copié dans le presse-papiers !");
+}
+
+function shareOnFacebook() {
+    const url = encodeURIComponent(window.location.href);
+    const title = encodeURIComponent("{{ event.title }}");
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+}
+
+function shareOnTwitter() {
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent("Rejoignez-moi à l'événement : {{ event.title }}");
+    window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+}
+
+function shareOnWhatsApp() {
+    const url = encodeURIComponent(window.location.href);
+    const text = encodeURIComponent("Rejoignez-moi à l'événement : {{ event.title }}");
+    window.open(`https://wa.me/?text=${text}%20${url}`, '_blank');
+}
+
+function shareByEmail() {
+    const subject = encodeURIComponent("{{ event.title }}");
+    const body = encodeURIComponent("Découvrez cet événement : {{ event.title }}\n\nDate : {{ event.start_date|date:'d/m/Y H:i' }}\nLieu : {{ event.location }}\n\nPlus d'informations : " + window.location.href);
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
 }
 </script>
 {% endblock %}
