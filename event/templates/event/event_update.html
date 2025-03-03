@@ -143,7 +143,7 @@
     <div class="form-container">
         <h1>Mettre à jour l'événement</h1>
 
-        <form method="POST" enctype="multipart/form-data">
+        <form method="POST" action="{% url 'update_event' event.id %}" enctype="multipart/form-data">
             {% csrf_token %}
             <!-- Parcours des champs du formulaire -->
             <div class="form-group">
@@ -192,14 +192,14 @@
             </div>
 
             <div class="form-group">
-                <button type="submit">Mettre à jour l'événement</button>
+                <button type="submit">Mettre à jour</button>
             </div>
         </form>
     </div>
 
     <!-- Footer -->
     <footer>
-        <p>© 2024 Événements Inc. | <a href="/privacy">Politique de confidentialité</a> | <a href="/terms">Conditions d'utilisation</a></p>
+        <p> 2024 Événements Inc. | <a href="/privacy">Politique de confidentialité</a> | <a href="/terms">Conditions d'utilisation</a></p>
     </footer>
 
 </body>

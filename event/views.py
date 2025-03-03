@@ -13,9 +13,9 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
-from django.utils.html import strip_tags
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
+import logging
 
 def home(request):
     return HttpResponse("Bienvenue dans mon site")
@@ -24,7 +24,7 @@ class EventCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Event
     form_class = EventForm
     template_name = 'event/create_event.html'
-    success_url = reverse_lazy('home')
+    success_url = reverse_lazy('list_event')
 
     def form_valid(self, form):
         form.instance.organizer = self.request.user
@@ -48,16 +48,16 @@ class EventCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return self.request.user.is_organisateur
 
     def handle_no_permission(self):
-        return redirect('home')  
+        return redirect('list_event')  
 
 class EventUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Event
     template_name = 'event/event_update.html'
     fields = ['title', 'description', 'image', 'location', 'start_date', 'end_date', 'price', 'capacity', 'category', 'is_public']
-    pk_url_kwarg = 'private_key'
+    pk_url_kwarg = 'id'
 
     def get_success_url(self):
-        return reverse('event_detail', kwargs={'private_key': self.object.private_key})
+        return reverse('event_detail', kwargs={'pk': self.object.pk})
 
     def test_func(self):
         event = self.get_object()
@@ -65,13 +65,19 @@ class EventUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def handle_no_permission(self):
         messages.error(self.request, "Vous n'avez pas la permission de modifier cet événement.")
-        return redirect('event_detail', private_key=self.kwargs.get('private_key'))
+        return redirect('event_detail', pk=self.kwargs.get('pk'))
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        # Ajouter des logs pour vérifier l'objet récupéré
+        logging.info(f"Récupération de l'événement : {obj}")  
+        return obj
 
 class EventDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Event
     template_name = 'event/event_confirm_delete.html'
     success_url = reverse_lazy('list_event')
-    pk_url_kwarg = 'private_key'
+    pk_url_kwarg = 'id'
 
     def test_func(self):
         event = self.get_object()
@@ -79,7 +85,7 @@ class EventDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def handle_no_permission(self):
         messages.error(self.request, "Vous n'avez pas la permission de supprimer cet événement.")
-        return redirect('event_detail', private_key=self.kwargs.get('private_key'))
+        return redirect('event_detail', pk=self.kwargs.get('pk'))
 
 
 class EventListView(ListView):
@@ -177,7 +183,7 @@ class EventDetailView(LoginRequiredMixin, DetailView):
     model = Event
     template_name = 'event/event_detail.html'
     context_object_name = 'event'
-    pk_url_kwarg = 'private_key'
+    pk_url_kwarg = 'pk'
     
     def get_object(self, queryset=None):
         """
@@ -186,8 +192,8 @@ class EventDetailView(LoginRequiredMixin, DetailView):
         if queryset is None:
             queryset = self.get_queryset()
             
-        private_key = self.kwargs.get(self.pk_url_kwarg)
-        event = get_object_or_404(queryset, private_key=private_key)
+        pk = self.kwargs.get(self.pk_url_kwarg)
+        event = get_object_or_404(queryset, pk=pk)
         
         # Vérifier si l'utilisateur a le droit de voir l'événement
         if not event.is_public:
@@ -223,7 +229,7 @@ class EventDetailView(LoginRequiredMixin, DetailView):
         # Générer le lien privé si nécessaire
         if not event.is_public and context['is_organizer']:
             context['private_url'] = self.request.build_absolute_uri(
-                reverse('event_detail', kwargs={'private_key': event.private_key})
+                reverse('event_detail', kwargs={'pk': event.pk})
             )
         
         return context
@@ -243,7 +249,7 @@ def register_for_event(request, private_key):
             messages.error(request, "Il n'y a plus de places disponibles pour cet événement.")
         elif event.is_user_registered(request.user):
             messages.error(request, "Vous êtes déjà inscrit à cet événement.")
-        return redirect('event_detail', private_key=private_key)
+        return redirect('event_detail', pk=event.id)
 
     # Créer le ticket
     ticket = Ticket.objects.create(
@@ -274,7 +280,7 @@ def register_for_event(request, private_key):
     except Exception as e:
         messages.warning(request, "Inscription réussie, mais l'envoi de l'email de confirmation a échoué.")
     
-    return redirect('event_detail', private_key=private_key)
+    return redirect('event_detail', pk=event.id)
 
 class OrganizerDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'event/organizer_dashboard.html'
