@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from .models import Event, Category, Ticket
 from .forms import EventForm
 from django.shortcuts import render,HttpResponse
-from django.db.models import Q, Count, Sum
+from django.db.models import Q, Count, Sum, Exists, OuterRef
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.contrib import messages
@@ -57,7 +57,7 @@ class EventUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     pk_url_kwarg = 'id'
 
     def get_success_url(self):
-        return reverse('event_detail', kwargs={'pk': self.object.pk})
+        return reverse('event_detail', kwargs={'private_key': self.object.private_key})
 
     def test_func(self):
         event = self.get_object()
@@ -65,7 +65,7 @@ class EventUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def handle_no_permission(self):
         messages.error(self.request, "Vous n'avez pas la permission de modifier cet événement.")
-        return redirect('event_detail', pk=self.kwargs.get('pk'))
+        return redirect('event_detail', private_key=self.object.private_key if hasattr(self, 'object') else None)
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
@@ -85,8 +85,13 @@ class EventDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def handle_no_permission(self):
         messages.error(self.request, "Vous n'avez pas la permission de supprimer cet événement.")
-        return redirect('event_detail', pk=self.kwargs.get('pk'))
+        return redirect('event_detail', private_key=self.object.private_key if hasattr(self, 'object') else None)
 
+def user_has_events(user):
+    """Vérifie si l'utilisateur a créé au moins un événement"""
+    if not user.is_authenticated:
+        return False
+    return Event.objects.filter(organizer=user).exists()
 
 class EventListView(ListView):
     model = Event
@@ -144,8 +149,11 @@ class EventListView(ListView):
         if self.request.user.is_authenticated:
             user_tickets = Ticket.objects.filter(user=self.request.user).values_list('event_id', flat=True)
             context['user_tickets'] = set(user_tickets)
+            # Vérifier si l'utilisateur a créé des événements
+            context['has_created_events'] = user_has_events(self.request.user)
         else:
             context['user_tickets'] = set()
+            context['has_created_events'] = False
             
         return context
 
@@ -158,7 +166,7 @@ def private_event_view(request, private_key):
     # Vérifier si l'événement est vraiment privé
     if event.is_public:
         messages.error(request, "Cet événement est public et accessible via la liste des événements.")
-        return redirect('event_detail', pk=event.id)
+        return redirect('event_detail', private_key=event.private_key)
     
     # Vérifier si l'utilisateur est l'organisateur ou déjà inscrit
     is_organizer = event.organizer == request.user
@@ -183,7 +191,7 @@ class EventDetailView(LoginRequiredMixin, DetailView):
     model = Event
     template_name = 'event/event_detail.html'
     context_object_name = 'event'
-    pk_url_kwarg = 'pk'
+    pk_url_kwarg = 'private_key'
     
     def get_object(self, queryset=None):
         """
@@ -192,8 +200,8 @@ class EventDetailView(LoginRequiredMixin, DetailView):
         if queryset is None:
             queryset = self.get_queryset()
             
-        pk = self.kwargs.get(self.pk_url_kwarg)
-        event = get_object_or_404(queryset, pk=pk)
+        private_key = self.kwargs.get(self.pk_url_kwarg)
+        event = get_object_or_404(queryset, private_key=private_key)
         
         # Vérifier si l'utilisateur a le droit de voir l'événement
         if not event.is_public:
@@ -229,7 +237,7 @@ class EventDetailView(LoginRequiredMixin, DetailView):
         # Générer le lien privé si nécessaire
         if not event.is_public and context['is_organizer']:
             context['private_url'] = self.request.build_absolute_uri(
-                reverse('event_detail', kwargs={'pk': event.pk})
+                reverse('event_detail', kwargs={'private_key': event.private_key})
             )
         
         return context
@@ -249,7 +257,7 @@ def register_for_event(request, private_key):
             messages.error(request, "Il n'y a plus de places disponibles pour cet événement.")
         elif event.is_user_registered(request.user):
             messages.error(request, "Vous êtes déjà inscrit à cet événement.")
-        return redirect('event_detail', pk=event.id)
+        return redirect('event_detail', private_key=event.private_key)
 
     # Créer le ticket
     ticket = Ticket.objects.create(
@@ -280,7 +288,7 @@ def register_for_event(request, private_key):
     except Exception as e:
         messages.warning(request, "Inscription réussie, mais l'envoi de l'email de confirmation a échoué.")
     
-    return redirect('event_detail', pk=event.id)
+    return redirect('event_detail', private_key=event.private_key)
 
 class OrganizerDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = 'event/organizer_dashboard.html'

@@ -486,10 +486,10 @@
                                 {% if user.is_authenticated %}
                                     {% if event.organizer == user %}
                                     <div class="btn-group">
-                                        <a href="{% url 'update_event' private_key=event.private_key %}" class="btn btn-warning btn-sm">
+                                        <a href="{% url 'update_event' id=event.id %}" class="btn btn-warning btn-sm">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <a href="{% url 'delete_event' private_key=event.private_key %}" class="btn btn-danger btn-sm">
+                                        <a href="{% url 'delete_event' id=event.id %}" class="btn btn-danger btn-sm">
                                             <i class="fas fa-trash"></i>
                                         </a>
                                     </div>

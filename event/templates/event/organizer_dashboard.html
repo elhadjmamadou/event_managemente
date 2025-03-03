@@ -148,7 +148,7 @@
                                    title="Voir les détails">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="{% url 'update_event' private_key=event.private_key %}" 
+                                <a href="{% url 'update_event' id=event.id %}" 
                                    class="btn btn-sm btn-outline-warning" 
                                    title="Modifier">
                                     <i class="fas fa-edit"></i>
@@ -159,7 +159,7 @@
                                         onclick="copyEventLink('{{ request.build_absolute_uri }}{% url 'event_detail' private_key=event.private_key %}')">
                                     <i class="fas fa-link"></i>
                                 </button>
-                                <a href="{% url 'delete_event' private_key=event.private_key %}" 
+                                <a href="{% url 'delete_event' id=event.id %}" 
                                    class="btn btn-sm btn-outline-danger" 
                                    title="Supprimer"
                                    onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')">
